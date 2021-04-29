@@ -9,6 +9,7 @@ type Severity = 'info' | 'error'
 interface Options {
   source: string
   target: string
+  eventsDict?: EventSource.EventSourceInitDict;
   logger?: Pick<Console, Severity>
 }
 
@@ -17,11 +18,13 @@ class Client {
   target: string;
   logger: Pick<Console, Severity>;
   events!: EventSource;
+  eventsDict?: EventSource.EventSourceInitDict;
 
-  constructor ({ source, target, logger = console }: Options) {
+  constructor ({ source, target, eventsDict, logger = console }: Options) {
     this.source = source
     this.target = target
     this.logger = logger!
+    this.eventsDict = eventsDict;
 
     if (!validator.isURL(this.source)) {
       throw new Error('The provided URL is invalid.')
@@ -69,7 +72,7 @@ class Client {
   }
 
   start () {
-    const events = new EventSource(this.source);
+    const events = new EventSource(this.source, this.eventsDict);
 
     // Reconnect immediately
     (events as any).reconnectInterval = 0 // This isn't a valid property of EventSource
